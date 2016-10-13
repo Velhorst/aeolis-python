@@ -195,7 +195,7 @@ def update(s, p):
 
     # update bathy
     if p['bedupdate']:
-        s['zb'] += dm[:,0].reshape((ny+1,nx+1)) / (p['rhop'] * p['porosity'])
+        s['zb'] += dm[:,0].reshape((ny+1,nx+1)) / (p['rhop'] * (1-p['porosity']))
 
     return s
 
