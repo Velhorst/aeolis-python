@@ -1311,7 +1311,7 @@ class AeoLiSRunner(AeoLiS):
 
         '''
         
-        if self.t - self.tout >= self.p['output_times']:
+        if self.t - self.tout >= self.p['output_times'] or self.t ==0.:
             
             variables = {}
             variables['time'] = self.t
@@ -1408,7 +1408,6 @@ class AeoLiSRunner(AeoLiS):
             return callback
         elif callback is None:
             return callback
-
         logger.warn('Invalid callback definition [%s]', callback)
         return None
 

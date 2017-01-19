@@ -154,7 +154,7 @@ def compute_moisture(s, p):
         raise ValuerError('Unknown moisture formulation [%s]' % p['method_moist'])
 
     # should be .04 according to Pye and Tsoar
-    # should be .64 according to Delgado-Fernandez (10% vol.)
+    # should be .064 according to Delgado-Fernandez (10% vol.)
     ix = mg > 0.064
     s['uth'][ix] = np.inf
     

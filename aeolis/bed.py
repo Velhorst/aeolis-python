@@ -97,7 +97,7 @@ def initialize(s, p):
         gs = gs / np.sum(gs)
         for i in range(nl):
             for j in range(nf):
-                s['mass'][:,:,i,j] = p['rhop'] * p['porosity'] \
+                s['mass'][:,:,i,j] = p['rhop'] * (1-p['porosity']) \
                                      * s['thlyr'][:,:,i] * gs[j]
     else:
         s['mass'][:,:,:,:] = p['bedcomp_file'].reshape(s['mass'].shape)                
@@ -192,11 +192,15 @@ def update(s, p):
         
     # reshape mass matrix
     s['mass'] = m.reshape((ny+1,nx+1,nl,nf))
-
+    
+    # update pickup
+    s['pickup'] = pickup.reshape((ny+1,nx+1,nf))
+    
     # update bathy
     if p['bedupdate']:
         s['zb'] += dm[:,0].reshape((ny+1,nx+1)) / (p['rhop'] * (1-p['porosity']))
-
+        s['zs'] += dm[:,0].reshape((ny+1,nx+1)) / (p['rhop'] * (1-p['porosity']))
+    
     return s
 
 
@@ -365,7 +369,7 @@ def mixtoplayer(s, p):
 
         # compute depth of disturbence for each cell and repeat for each layer
         DOD = p['facDOD'] * s['Hs']
-
+		
         # compute ratio total layer thickness and depth of disturbance 
         ix = DOD > 0.
         f = np.ones(DOD.shape)
@@ -373,8 +377,8 @@ def mixtoplayer(s, p):
 
         # correct shapes
         DOD = DOD[:,:,np.newaxis].repeat(nl, axis=2)
-        f = f[:,:,np.newaxis].repeat(nl, axis=2)
-
+        f = f[:,:,np.newaxis]	#.repeat(nl, axis=2)
+		
         # determine what layers are above the depth of disturbance
         ix = (s['thlyr'].cumsum(axis=2) <= DOD) & (DOD > 0.)
         ix = ix[:,:,:,np.newaxis].repeat(nf, axis=3)
@@ -388,6 +392,7 @@ def mixtoplayer(s, p):
             
             gd = normalize(p['grain_dist']).reshape((1,1,1,-1)).repeat(ny, axis=0).repeat(nx, axis=1)
             mass = np.nanmean(mass, axis=2, keepdims=True) * f + gd * (1. - f)
+
             s['mass'][ix] = mass.repeat(nl, axis=2)[ix]
         
     return s
