@@ -164,7 +164,7 @@ def update(s, p):
 
     # negative mass may occur in case of deposition due to numerics,
     # which should be prevented
-	dm_old = dm.copy()
+    dm_old = dm.copy() #RECONSIDER PUTTING THE BED UPDATE (ZB and ZS) IN FRONT OF prevent_negative_mass()
     m, dm, pickup = prevent_negative_mass(m, dm, pickup)
     
     # determine weighing factors
@@ -201,6 +201,7 @@ def update(s, p):
     if p['bedupdate']:
         s['zb'] += dm[:,0].reshape((ny+1,nx+1)) / (p['rhop'] * (1-p['porosity']))
         s['zs'] += dm[:,0].reshape((ny+1,nx+1)) / (p['rhop'] * (1-p['porosity']))
+        dm_lost_in_prevent_negative_mass = dm_old - dm # correct the bed levels if this is done in bed.prevent_negative_mass()
         s['zb'] += dm_lost_in_prevent_negative_mass[:,0].reshape((ny+1,nx+1)) / (p['rhop'] * (1-p['porosity']))
         s['zs'] += dm_lost_in_prevent_negative_mass[:,0].reshape((ny+1,nx+1)) / (p['rhop'] * (1-p['porosity']))
     
