@@ -41,7 +41,7 @@ MODEL_STATE = {
         'tau',                              # [m/s] Wind shear velocity
         'taus',                             # [m/s] Component of wind shear velocity in x-direction
         'taun',                             # [m/s] Component of wind shear velocity in x-direction
-        'udir',                             # [rad] Wind direction
+        'udir',                             # [deg] Wind direction
         'zb',                               # [m] Bed level above reference
         'zs',                               # [m] Water level above reference
         'Hs',                               # [m] Wave height
@@ -49,9 +49,9 @@ MODEL_STATE = {
     ('ny','nx','nfractions') : (
         'Cu',                               # [kg/m^2] Equilibrium sediment concentration integrated over saltation height
         'Ct',                               # [kg/m^2] Instantaneous sediment concentration integrated over saltation height
-        'q',                                # [kg/m/s] Instantaneous sediment flux
+        'q',                                #FIXME (Is not yet implemented) # [kg/m/s] Instantaneous sediment flux
         'qs',                               # [kg/m/s] Instantaneous sediment flux in x-direction
-        'qn',                               # [kg/m/s] Instantaneous sediment flux in y-direction
+        'qn',                               # [kg/m/s] Instantaneous sediment flux in y-direction  
         'pickup',                           # [kg/m^2] Sediment entrainment
         'w',                                # [-] Weights of sediment fractions
         'w_init',                           # [-] Initial guess for ``w''
