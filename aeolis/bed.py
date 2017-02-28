@@ -403,8 +403,7 @@ def mixtoplayer(s, p):
             mass = s['mass'].copy()
             mass[~ix] = np.nan
             
-            gd = normalize(p['grain_dist'])* p['rhop'] * (1-p['porosity']) * s['thlyr'][0,0,0] # assumes a constant layerthickness
-            gd = gd.reshape((1,1,1,-1)).repeat(ny, axis=0).repeat(nx, axis=1)
+            gd = normalize.reshape((1,1,1,-1)).repeat(ny, axis=0).repeat(nx, axis=1)
             mass = np.nanmean(mass, axis=2, keepdims=True) * f + gd * (1. - f)
 
             s['mass'][ix] = mass.repeat(nl, axis=2)[ix]
