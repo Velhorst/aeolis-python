@@ -150,11 +150,17 @@ def update(s, p):
     nf = p['nfractions']
 
     # determine net erosion
+    pickup_old = s['pickup'].copy()
     pickup = s['pickup'].reshape((-1,nf))
 
     # determine total mass that should be exchanged between layers
     dm = -np.sum(pickup, axis=-1, keepdims=True).repeat(nf, axis=-1)
     
+    # update bathy
+    if p['bedupdate']:
+        s['zb'] += dm[:,0].reshape((ny+1,nx+1)) / (p['rhop'] * (1-p['porosity']))
+        s['zs'] += dm[:,0].reshape((ny+1,nx+1)) / (p['rhop'] * (1-p['porosity']))
+
     # get erosion and deposition cells
     ix_ero = dm[:,0] < 0.
     ix_dep = dm[:,0] > 0.
@@ -164,7 +170,7 @@ def update(s, p):
 
     # negative mass may occur in case of deposition due to numerics,
     # which should be prevented
-    dm_old = dm.copy() #RECONSIDER PUTTING THE BED UPDATE (ZB and ZS) IN FRONT OF prevent_negative_mass()
+#    dm_old = dm.copy() #RECONSIDER PUTTING THE BED UPDATE (ZB and ZS) IN FRONT OF prevent_negative_mass()
     m, dm, pickup = prevent_negative_mass(m, dm, pickup)
     
     # determine weighing factors
@@ -193,17 +199,20 @@ def update(s, p):
         
     # reshape mass matrix
     s['mass'] = m.reshape((ny+1,nx+1,nl,nf))
-    
+
     # update pickup
-    s['pickup'] = pickup.reshape((ny+1,nx+1,nf))
-    
-    # update bathy
-    if p['bedupdate']:
-        s['zb'] += dm[:,0].reshape((ny+1,nx+1)) / (p['rhop'] * (1-p['porosity']))
-        s['zs'] += dm[:,0].reshape((ny+1,nx+1)) / (p['rhop'] * (1-p['porosity']))
-        dm_lost_in_prevent_negative_mass = dm_old - dm # correct the bed levels if this is done in bed.prevent_negative_mass()
-        s['zb'] += dm_lost_in_prevent_negative_mass[:,0].reshape((ny+1,nx+1)) / (p['rhop'] * (1-p['porosity']))
-        s['zs'] += dm_lost_in_prevent_negative_mass[:,0].reshape((ny+1,nx+1)) / (p['rhop'] * (1-p['porosity']))
+    s['pickup'] = pickup_old # store the 'old' pickup which used for the bed level updating
+	
+#    # update pickup
+#   s['pickup'] = pickup.reshape((ny+1,nx+1,nf))
+#    
+#    # update bathy
+#    if p['bedupdate']:
+#        s['zb'] += dm[:,0].reshape((ny+1,nx+1)) / (p['rhop'] * (1-p['porosity']))
+#        s['zs'] += dm[:,0].reshape((ny+1,nx+1)) / (p['rhop'] * (1-p['porosity']))
+#        dm_lost_in_prevent_negative_mass = dm_old - dm # correct the bed levels if this is done in bed.prevent_negative_mass()
+#        s['zb'] += dm_lost_in_prevent_negative_mass[:,0].reshape((ny+1,nx+1)) / (p['rhop'] * (1-p['porosity']))
+#        s['zs'] += dm_lost_in_prevent_negative_mass[:,0].reshape((ny+1,nx+1)) / (p['rhop'] * (1-p['porosity']))
     
     return s
 
@@ -394,7 +403,8 @@ def mixtoplayer(s, p):
             mass = s['mass'].copy()
             mass[~ix] = np.nan
             
-            gd = normalize(p['grain_dist']).reshape((1,1,1,-1)).repeat(ny, axis=0).repeat(nx, axis=1)
+            gd = normalize(p['grain_dist'])* p['rhop'] * (1-p['porosity']) * s['thlyr'][0,0,0] # assumes a constant layerthickness
+            gd = gd.reshape((1,1,1,-1)).repeat(ny, axis=0).repeat(nx, axis=1)
             mass = np.nanmean(mass, axis=2, keepdims=True) * f + gd * (1. - f)
 
             s['mass'][ix] = mass.repeat(nl, axis=2)[ix]
